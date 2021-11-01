@@ -23,11 +23,11 @@
 #include "dma.h"
 #include "usart.h"
 #include "gpio.h"
-#include <stdio.h>
-#include <string.h>
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,7 +62,8 @@ extern ADC_HandleTypeDef hadc1;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void UART_IRQHandler(UART_HandleTypeDef *huart);
+void UART_IDLECallback(UART_HandleTypeDef *huart);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -138,7 +139,7 @@ int main(void)
 	  				temp = (1.43f - temp) / 4.3f + 25;
 	  				HAL_ADC_Stop(&hadc1);
 	  				char responseTemp[10];
-	  				sprintf(responseTemp, "T MCU=%dC", (int) temp);
+	  				sprintf(responseTemp, "T MCU=%dC\r", (int) temp);
 	  				responseTemp[9] = 0;
 	  				HAL_UART_Transmit(&huart2, (uint8_t*) responseTemp, 10, 0xFFFFFFFF);
 	  			}
@@ -162,7 +163,7 @@ int main(void)
 	  				HAL_ADC_Stop(&hadc1);
 	  				char responseV[13];
 	  				responseV[12] = 0;
-	  				sprintf(responseV, "V REF=%.2f V", vref);
+	  				sprintf(responseV, "V REF=%.2f V\r", vref);
 	  				HAL_UART_Transmit(&huart2, (uint8_t*) responseV, 13, 0xFFFFFFFF);
 	  			}
 	  			else if ((Receive_buff[0] == 'a' || Receive_buff[0] == 'A')
@@ -190,7 +191,7 @@ int main(void)
 	  				temp = (1.43f - temp) / 4.3f + 25;
 	  				HAL_ADC_Stop(&hadc1);
 	  				char responseTemp[10];
-	  				sprintf(responseTemp, "T MCU=%dC", (int) temp);
+	  				sprintf(responseTemp, "T MCU=%dC\r", (int) temp);
 	  				responseTemp[9] = 0;
 	  				HAL_UART_Transmit(&huart2, (uint8_t*) responseTemp, 10, 0xFFFFFFFF);
 
@@ -207,13 +208,13 @@ int main(void)
 	  				HAL_ADC_Stop(&hadc1);
 	  				char responseV[13];
 	  				responseV[12] = 0;
-	  				sprintf(responseV, "V REF=%.2f V", vref);
+	  				sprintf(responseV, "V REF=%.2f V\r", vref);
 	  				HAL_UART_Transmit(&huart2, (uint8_t*) responseV, 13, 0xFFFFFFFF);
 	  			}
 	  			else
 	  			{
-	  				HAL_UART_Transmit(&huart2, (uint8_t*) "Wrong command",
-	  						strlen("Wrong command"), 0xFFFFFFFF);
+	  				HAL_UART_Transmit(&huart2, (uint8_t*) "Wrong command\r",
+	  						strlen("Wrong command\n"), 0xFFFFFFFF);
 	  			}
 	  		}
 
