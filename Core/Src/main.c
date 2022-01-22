@@ -48,7 +48,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t flashing = 1;
+uint8_t flashing = 0;
+GPIO_PinState led1_flag, led2_flag;
 uint8_t Receive_buff[Buff_Size];
 uint8_t UART_Message = 0;
 
@@ -78,7 +79,7 @@ void UART_IDLECallback(UART_HandleTypeDef *huart);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	char buf[150];
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -105,6 +106,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);
 	HAL_UART_Receive_DMA(&huart2, Receive_buff, Buff_Size - 1);
+	sprintf(buf, "Enter command!\r\n");
+	HAL_UART_Transmit(&huart2, (uint8_t*) buf, 15, 0xFFFFFFFF);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -138,10 +141,9 @@ int main(void)
 	  				temp = (float) val / 4096 * 3.3f;
 	  				temp = (1.43f - temp) / 4.3f + 25;
 	  				HAL_ADC_Stop(&hadc1);
-	  				char responseTemp[10];
-	  				sprintf(responseTemp, "T MCU=%dC\r", (int) temp);
-	  				responseTemp[9] = 0;
-	  				HAL_UART_Transmit(&huart2, (uint8_t*) responseTemp, 10, 0xFFFFFFFF);
+	  				char responseTemp[12];
+	  				sprintf(responseTemp, "T MCU=%dC\r\n", (int) temp);
+	  				HAL_UART_Transmit(&huart2, (uint8_t*) responseTemp, strlen(responseTemp), 0xFFFFFFFF);
 	  			}
 	  			else if ((Receive_buff[0] == 'v' || Receive_buff[0] == 'V')
 	  					&& Receive_buff[1] == ' '
@@ -161,10 +163,9 @@ int main(void)
 	  				uint16_t val = HAL_ADC_GetValue(&hadc1);
 	  				float vref = 1.2f * 4096.0f / val;
 	  				HAL_ADC_Stop(&hadc1);
-	  				char responseV[13];
-	  				responseV[12] = 0;
-	  				sprintf(responseV, "V REF=%.2f V\r", vref);
-	  				HAL_UART_Transmit(&huart2, (uint8_t*) responseV, 13, 0xFFFFFFFF);
+	  				char responseV[20];
+	  				sprintf(responseV, "V REF=%.2f V\r\n", vref);
+	  				HAL_UART_Transmit(&huart2, (uint8_t*) responseV, strlen(responseV), 0xFFFFFFFF);
 	  			}
 	  			else if ((Receive_buff[0] == 'a' || Receive_buff[0] == 'A')
 	  					&& (Receive_buff[1] == 'l' || Receive_buff[1] == 'L')
@@ -190,10 +191,9 @@ int main(void)
 	  				temp = (float) val / 4096 * 3.3f;
 	  				temp = (1.43f - temp) / 4.3f + 25;
 	  				HAL_ADC_Stop(&hadc1);
-	  				char responseTemp[10];
-	  				sprintf(responseTemp, "T MCU=%dC\r", (int) temp);
-	  				responseTemp[9] = 0;
-	  				HAL_UART_Transmit(&huart2, (uint8_t*) responseTemp, 10, 0xFFFFFFFF);
+	  				char responseTemp[12];
+	  				sprintf(responseTemp, "T MCU=%dC\r\n", (int) temp);
+	  				HAL_UART_Transmit(&huart2, (uint8_t*) responseTemp, strlen(responseTemp), 0xFFFFFFFF);
 
 	  				sConfig.Channel = ADC_CHANNEL_VREFINT;
 	  				sConfig.Rank = 1;
@@ -206,10 +206,9 @@ int main(void)
 	  				uint16_t vVal = HAL_ADC_GetValue(&hadc1);
 	  				float vref = 1.2f * 4096.0f / vVal;
 	  				HAL_ADC_Stop(&hadc1);
-	  				char responseV[13];
-	  				responseV[12] = 0;
-	  				sprintf(responseV, "V REF=%.2f V\r", vref);
-	  				HAL_UART_Transmit(&huart2, (uint8_t*) responseV, 13, 0xFFFFFFFF);
+	  				char responseV[20];
+	  				sprintf(responseV, "V REF=%.2f V\r\n", vref);
+	  				HAL_UART_Transmit(&huart2, (uint8_t*) responseV, strlen(responseV), 0xFFFFFFFF);
 	  			}
 	  			else
 	  			{
@@ -218,20 +217,34 @@ int main(void)
 	  			}
 	  		}
 
-	  		if (flashing)
+	  	  	if (flashing%2 == 0)
+	  	  	{
+				HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET); led1_flag = GPIO_PIN_SET;
+				HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET); led2_flag = GPIO_PIN_RESET;
+				HAL_Delay(250);
+	  	  	}
+	  	  	if (flashing%2 == 0)
+	  	  	{
+				HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET); led1_flag = GPIO_PIN_SET;
+				HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET); led2_flag = GPIO_PIN_SET;
+				HAL_Delay(250);
+	  	  	}
+	  	  	if (flashing%2 == 0)
+	  	  	{
+				HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET); led1_flag = GPIO_PIN_RESET;
+				HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET); led2_flag = GPIO_PIN_SET;
+				HAL_Delay(250);
+	  	  	}
+	  	  	if (flashing%2 == 0)
+	  	  	{
+				HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET); led1_flag = GPIO_PIN_RESET;
+				HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET); led2_flag = GPIO_PIN_RESET;
+				HAL_Delay(250);
+	  	  	}
+	  		if (flashing%2 == 1)
 	  		{
-	  			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
-	  			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
-	  			HAL_Delay(250);
-	  			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
-	  			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
-	  			HAL_Delay(250);
-	  			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
-	  			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
-	  			HAL_Delay(250);
-	  			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
-	  			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
-	  			HAL_Delay(250);
+	  			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, led1_flag);
+	  			HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, led2_flag);
 	  		}
     /* USER CODE END WHILE */
 
@@ -298,6 +311,13 @@ void UART_IDLECallback(UART_HandleTypeDef *huart)
 	HAL_UART_DMAStop(huart);
 	UART_Message = 1;
 }
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == GPIO_PIN_13)
+	{
+		flashing++;
+	}
+}
 /* USER CODE END 4 */
 
 /**
@@ -353,4 +373,3 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
