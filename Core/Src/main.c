@@ -161,7 +161,7 @@ int main(void)
 	  				HAL_ADC_Start(&hadc1);
 	  				HAL_ADC_PollForConversion(&hadc1, 0xFFFFFFFF);
 	  				uint16_t val = HAL_ADC_GetValue(&hadc1);
-	  				float vref = 1.2f * 4096.0f / val;
+	  				float vref = 3.3f*val/4096.0f;
 	  				HAL_ADC_Stop(&hadc1);
 	  				char responseV[20];
 	  				sprintf(responseV, "V REF=%.2f V\r\n", vref);
@@ -204,7 +204,7 @@ int main(void)
 	  				HAL_ADC_Start(&hadc1);
 	  				HAL_ADC_PollForConversion(&hadc1, 0xFFFFFFFF);
 	  				uint16_t vVal = HAL_ADC_GetValue(&hadc1);
-	  				float vref = 1.2f * 4096.0f / vVal;
+	  				float vref = 3.3f*vVal/4096.0f;
 	  				HAL_ADC_Stop(&hadc1);
 	  				char responseV[20];
 	  				sprintf(responseV, "V REF=%.2f V\r\n", vref);
